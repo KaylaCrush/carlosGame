@@ -1,10 +1,10 @@
 import pygame
 import spritesheet
-
+import math
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 400
+SCREEN_WIDTH = 1080
+SCREEN_HEIGHT = 640
 BLACK = (0, 0, 0)
 SPRITE_SCALE = 1
 
@@ -22,7 +22,15 @@ jumpRight = sprite_sheet.get_image(3,5, SPRITE_SCALE,BLACK)
 jumpLeft = sprite_sheet.get_image(1,5, SPRITE_SCALE,BLACK)
 jump = sprite_sheet.get_image(2,5, SPRITE_SCALE,BLACK)
 
-bg = pygame.image.load("images/school.jpg")
+raw_bg = [pygame.image.load(f"images/bg/bg_{i}.png") for i in range(0,5)]
+bg = [pygame.transform.scale_by(pic, 4) for pic in raw_bg]
+bg_widths = [pic.get_width() for pic in bg]
+
+tiles = 2
+
+scroll = 0
+speed = 1
+parallax_factor = 2
 
 clock = pygame.time.Clock()
 
@@ -54,19 +62,31 @@ class chavez(object):
             win.blit(stand, (self.x,self.y))
 
 
+def draw_background():
+    for i in range(0,5):
+        offset = scroll * i * parallax_factor
+        offset = offset%bg_widths[i]
+
+        win.blit(bg[i],(offset,0))
+        win.blit(bg[i],(-bg_widths[i]+offset,0))
 
 def redrawGameWindow():
-    win.blit(bg, (0,0))
+
+    draw_background()
+
     carlos.draw(win)
 
     pygame.display.update()
 
 
 #mainloop
-carlos = chavez(200, 410, 64,64)
+carlos = chavez(200, SCREEN_HEIGHT-100, 64,64)
 run = True
 while run:
+
     clock.tick(27)
+    scroll = scroll%SCREEN_WIDTH
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -74,14 +94,17 @@ while run:
 
     keys = pygame.key.get_pressed()
 
-    if keys[pygame.K_LEFT] and carlos.x > carlos.vel:
-        carlos.x -= carlos.vel
+    if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and carlos.x > carlos.vel:
+        scroll = scroll + speed
+        #carlos.x -= carlos.vel
         carlos.left = True
         carlos.right = False
-    elif keys[pygame.K_RIGHT] and carlos.x < 500 - carlos.width - carlos.vel:
-        carlos.x += carlos.vel
+    elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and carlos.x < 500 - carlos.width - carlos.vel:
+        scroll = scroll - speed
+        #carlos.x += carlos.vel
         carlos.right = True
         carlos.left = False
+
     else:
         carlos.right = False
         carlos.left = False
