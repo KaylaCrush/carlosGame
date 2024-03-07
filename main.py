@@ -35,7 +35,7 @@ parallax_factor = 2
 clock = pygame.time.Clock()
 
 
-class chavez(object):
+class Player(pygame.sprite.Sprite):
     def __init__(self,x,y,width,height):
         self.x = x
         self.y = y
@@ -61,6 +61,38 @@ class chavez(object):
         else:
             win.blit(stand, (self.x,self.y))
 
+    def update(self):
+        keys = pygame.key.get_pressed()
+
+        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.x > self.vel:
+            self.left = True
+            self.right = False
+        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and carlos.x < 500 - self.width - self.vel:
+            self.right = True
+            self.left = False
+
+        else:
+            self.right = False
+            self.left = False
+            self.walkCount = 0
+
+        if not(self.isJump):
+            if keys[pygame.K_SPACE]:
+                self.isJump = True
+                self.right = False
+                self.left = False
+                self.walkCount = 0
+        else:
+            if self.jumpCount >= -10:
+                neg = 1
+                if self.jumpCount < 0:
+                    neg = -1
+                self.y -= (self.jumpCount ** 2) * 0.5 * neg
+                self.jumpCount -= 1
+            else:
+                self.isJump = False
+                self.jumpCount = 10
+
 
 def draw_background():
     for i in range(0,5):
@@ -80,7 +112,7 @@ def redrawGameWindow():
 
 
 #mainloop
-carlos = chavez(200, SCREEN_HEIGHT-100, 64,64)
+carlos = Player(200, SCREEN_HEIGHT-100, 64,64)
 run = True
 while run:
 
@@ -92,40 +124,13 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
+    carlos.update()
     keys = pygame.key.get_pressed()
-
     if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and carlos.x > carlos.vel:
         scroll = scroll + speed
-        #carlos.x -= carlos.vel
-        carlos.left = True
-        carlos.right = False
+
     elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and carlos.x < 500 - carlos.width - carlos.vel:
         scroll = scroll - speed
-        #carlos.x += carlos.vel
-        carlos.right = True
-        carlos.left = False
-
-    else:
-        carlos.right = False
-        carlos.left = False
-        carlos.walkCount = 0
-
-    if not(carlos.isJump):
-        if keys[pygame.K_SPACE]:
-            carlos.isJump = True
-            carlos.right = False
-            carlos.left = False
-            carlos.walkCount = 0
-    else:
-        if carlos.jumpCount >= -10:
-            neg = 1
-            if carlos.jumpCount < 0:
-                neg = -1
-            carlos.y -= (carlos.jumpCount ** 2) * 0.5 * neg
-            carlos.jumpCount -= 1
-        else:
-            carlos.isJump = False
-            carlos.jumpCount = 10
 
     redrawGameWindow()
 
